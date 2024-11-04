@@ -1,0 +1,3 @@
+[submodule "Implicit_surface_reconstruction_3/examples/Implicit_surface_reconstruction_3/spectra"]
+	path = Implicit_surface_reconstruction_3/examples/Implicit_surface_reconstruction_3/spectra
+	url = https://github.com/yixuan/spectra.git

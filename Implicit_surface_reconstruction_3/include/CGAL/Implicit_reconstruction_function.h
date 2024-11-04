@@ -65,9 +65,9 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/range.hpp>
 
-#include <SymGEigsSolver.h>
-#include <MatOp/SparseSymMatProd.h>
-#include <MatOp/SparseCholesky.h>
+#include <Spectra/SymGEigsSolver.h>
+#include <Spectra/MatOp/SparseSymMatProd.h>
+#include <Spectra/MatOp/SparseCholesky.h>
 #include <unsupported/Eigen/SparseExtra>
 
 
@@ -1223,7 +1223,7 @@ private:
 
     // Solve generalized eigenvalue problem
     time_init = clock();
-    spectral_solver<ESMatrix, EMatrix, Spectra::LARGEST_ALGE>(EA, B, EL, X);
+    spectral_solver<ESMatrix, EMatrix, Spectra::SortRule::LargestAlge>(EA, B, EL, X);
 
     duration_solve = (clock() - time_init)/CLOCKS_PER_SEC;
 
@@ -1244,22 +1244,23 @@ private:
   /// @param MatType The name of the matrix operation class for A and B
   /// @param RMatType The name of the matrix operation class for X
   /// @param SelectionRule An enumeration value indicating the selection rule of the requested eigenvalues
-  template <typename MatType, typename RMatType, int SelectionRule>
+  template <typename MatType, typename RMatType, Spectra::SortRule SelectionRule>
   void spectral_solver(const MatType& A, const MatType& B, const MatType& L, RMatType& X, int k = 1, int m = 37)
   {
       CGAL_TRACE("Begin solving spectra...\n");
       OpType op(A);
       BOpType Bop(B);
       // Make sure B is positive definite and the decompoition is successful
-      assert(Bop.info() == Spectra::SUCCESSFUL);
+      assert(Bop.info() == Spectra::CompInfo::Successful);
 
-      Spectra::SymGEigsSolver<FT, SelectionRule, OpType, BOpType, Spectra::GEIGS_CHOLESKY> eigs(&op, &Bop, k, m);
+      // Spectra::SymGEigsSolver<FT, SelectionRule, OpType, BOpType, Spectra::GEigsMode::Cholesky> eigs(&op, &Bop, k, m);
+      Spectra::SymGEigsSolver<OpType, BOpType, Spectra::GEigsMode::Cholesky> eigs(op, Bop, k, m);
       eigs.init();
-      int nconv = eigs.compute(200); 
+      int nconv = eigs.compute(SelectionRule, 200); 
 
       CGAL_TRACE("Problem solved!\n");
 
-      if(eigs.info() != Spectra::SUCCESSFUL)
+      if(eigs.info() != Spectra::CompInfo::Successful)
         CGAL_TRACE("  Spectra failed! %d\n", eigs.info());
 
       X = eigs.eigenvectors();    

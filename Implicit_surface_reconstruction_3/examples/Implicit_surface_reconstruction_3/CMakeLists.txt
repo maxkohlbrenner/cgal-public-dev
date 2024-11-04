@@ -3,6 +3,7 @@
 project( Implicit_surface_reconstruction_3_Examples )
 
 cmake_minimum_required(VERSION 2.8.11)
+set(CMAKE_BUILD_TYPE release)
 
 # Test if compiler has C++11
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_generalized_initializers has_cpp11)
@@ -16,6 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Find CGAL
+set(CGAL_DIR ../../../Installation)
 find_package(CGAL QUIET)
 
 if ( CGAL_FOUND )
@@ -45,17 +47,22 @@ if ( CGAL_FOUND )
     message(STATUS "NOTICE: Eigen 3.1.0 (or greater) was not found, tests won't be compiled.")
   endif()
 
-  find_package(Spectra REQUIRED)
-  if(SPECTRA_FOUND)
-    include_directories("${SPECTRA_INCLUDE_DIR}")
-  else()
-    message(STATUS "NOTICE: Spectra was not found, tests won't be compiled.")
-  endif()
+  add_subdirectory(spectra)
+  set(CGAL_3RD_PARTY_LIBRARIES Spectra)
+  message("CGAL Libraries: ${CGAL_LIBRARIES}")
+  message("CGAL 3P Libraries: ${CGAL_3RD_PARTY_LIBRARIES}")
 
-  if(NOT EIGEN3_FOUND OR NOT SPECTRA_FOUND)
+  #find_package(Spectra REQUIRED)
+  #if(SPECTRA_FOUND)
+  #include_directories("${SPECTRA_INCLUDE_DIR}")
+  #else()
+  #message(STATUS "NOTICE: Spectra was not found, tests won't be compiled.")
+  #endif()
+
+  if(NOT EIGEN3_FOUND)# OR NOT SPECTRA_FOUND)
     return()
   endif()
-  
+
   create_single_source_cgal_program( "poisson_reconstruction_example.cpp" )
   #create_single_source_cgal_program( "poisson_reconstruction.cpp" )
   create_single_source_cgal_program( "poisson_reconstruction_function.cpp" )
@@ -63,7 +70,7 @@ if ( CGAL_FOUND )
   #create_single_source_cgal_program( "spectral_reconstruction.cpp" )
   create_single_source_cgal_program( "spectral_reconstruction_function.cpp" )
 
-  
+
 else()
 
     message(STATUS "NOTICE: This program requires the CGAL library, and will not be compiled.")
